@@ -1,0 +1,9 @@
+[
+    [ ["black",  "off"], ["white",  "off"], ["three",  "off"] ],
+    [ ["black",  "low"], ["white",  "off"], ["three",  "off"] ],
+    [ ["black", "high"], ["white",  "off"], ["three",  "off"] ],
+    [ ["black", "high"], ["white",  "low"], ["three",  "off"] ],
+    [ ["black", "high"], ["white", "high"], ["three",  "off"] ],
+    [ ["black", "high"], ["white", "high"], ["three",  "low"] ],
+    [ ["black", "high"], ["white", "high"], ["three", "high"] ]
+]
