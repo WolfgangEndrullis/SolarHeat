@@ -118,7 +118,8 @@ example file with three heaters.
 
 If the solar system does not supply electricity to the public grid, the 
 manager can only test what energy is available. This is done in the 
-subroutine __try_loop(). 
+subroutine __try_loop(). See the class Solar and adjust 
+supply_to_grid = False.
 
 #### Measure and decide
 
