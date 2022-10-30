@@ -127,4 +127,9 @@ If the solar systems does supply all its excess energy to the grid, the
 routine __measure_loop() is used. See the class Solar and adjust 
 supply_to_grid = True.
 
+#### Robustness
+
+The process is on a 24x7 basis. Heaters can be unplugged and re-enabled. The 
+manager can deal with intermittent errors and reintegrates heaters when they 
+can be reached again in the WLAN.
 
