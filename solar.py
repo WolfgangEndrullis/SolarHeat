@@ -29,7 +29,7 @@ class Solar:
     # --------------------------------
     watt_pv = 0
     watt_load = 0
-    watt_accu = 0
+    watt_akku = 0
     watt_grid = 0
     # --------------------------------
     # battery state of charge
@@ -60,7 +60,7 @@ class Solar:
         site = response["Body"]["Data"]["Site"]
         self.watt_pv = site["P_PV"]
         self.watt_load = site["P_Load"]
-        self.watt_accu = site["P_Akku"]
+        self.watt_akku = site["P_Akku"]
         self.watt_grid = site["P_Grid"]
 
     def __parse_akku(self, response) -> None:
@@ -74,13 +74,13 @@ class Solar:
         return round(self.watt_load, 2)
 
     def get_watt_akku(self) -> int:
-        return round(self.watt_accu, 2)
+        return round(self.watt_akku, 2)
 
     def get_watt_grid(self) -> int:
         return round(self.watt_grid, 2)
 
     def get_watt_akku_grid(self) -> int:
-        return round(self.watt_accu + self.watt_grid, 2)
+        return round(self.watt_akku + self.watt_grid, 2)
 
     def get_charged_percent(self) -> int:
         return round(self.charged_percent, 2)
