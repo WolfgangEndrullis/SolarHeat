@@ -127,5 +127,4 @@ If the solar systems does supply all its excess energy to the grid, the
 routine __measure_loop() is used. See the class Solar and adjust 
 supply_to_grid = True.
 
-This loop is best tested and in action every day.
 
