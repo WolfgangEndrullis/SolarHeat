@@ -30,18 +30,20 @@ def heat(heater_name, heater_status=None, verbose=True):
         return text
 
     if heater_name not in heaters.dict:
+        error = "Unknown heater name %r given!" % heater_name
         print()
-        print("Unknown heater name %r given!" % heater_name)
+        print(error)
         print()
-        raise ValueError
+        raise ValueError(error)
 
     heater = heater_by_name(heater_name)
 
     if heater_status is None:
+        error = "No status given! See help."
         print()
-        print("No status given! See help.")
+        print(error)
         print()
-        raise ValueError
+        raise ValueError(error)
 
     heater_status = heater_status.lower()
 
@@ -85,7 +87,7 @@ def heat(heater_name, heater_status=None, verbose=True):
         print()
         print("Undefined status %r! See help." % heater_status)
         print()
-        raise ValueError
+        raise ValueError()
 
     heater.set_load(heater_status)
     watt = heater.get_watt()

@@ -28,7 +28,7 @@ class HeatManager(threading.Thread):
     verbose = True
 
     step = None
-    new_step_definition = False
+    dynamic_config_change = False
 
     status_print = ""
 
@@ -98,18 +98,27 @@ class HeatManager(threading.Thread):
         self.step.set_all_heater(verbose=self.verbose)
         while self.running:
             try:
+                # 'available' takes into account the current availability of the heaters
+                #
+                # If some heaters are temporarily unavailable, a high heat setting can be selected
+                # with the remaining heaters. If the heaters are available again, this change must
+                # lead to a recalculation of the heating level. The suddenly high value of 'available'
+                # does not reflect the real power use.
                 available = self.__get_status_and_available()
+                if not self.dynamic_config_change:
+                    self.dynamic_config_change = heaters.is_dynamic_configuration_change()
+                cs = "  CS" if self.dynamic_config_change else ""
                 if self.verbose:
-                    print(self.status_print)
+                    print(self.status_print + cs)
                 i = len(self.heatStepList)
                 for st in reversed(self.heatStepList):
                     i -= 1
                     # print(st.heater_status_list)
-                    total_watt = st.get_total_watt()
+                    total_watt = st.get_total_watt(True)
                     # print("TOTAL", total_watt)
                     if available >= total_watt or i == 0:
-                        if st != self.step or self.new_step_definition:
-                            self.new_step_definition = False
+                        if st != self.step or self.dynamic_config_change:
+                            self.dynamic_config_change = False
                             st.set_all_heater(self.verbose)
                             self.step = st
                         break
@@ -129,11 +138,20 @@ class HeatManager(threading.Thread):
         watt_akku = self.solar.get_watt_akku()  # negative into the akku
         watt_minimal_charge = - self.solar.get_watt_minimum_charge()
         percent = self.solar.get_charged_percent()
-        available = round(- watt_grid - watt_akku + watt_minimal_charge + self.step.get_total_watt(), 2)
+        # --- available ---
+        # watt_grid < 0 and watt_akku < 0, if excess energy goes into these systems.
+        # watt_minimal_charge < 0, since charging power is always negative in the system.
+        # We want to calculate the available power with positive sign!
+        # So really available is first:  - watt_grid - watt_akku
+        # We need to subtract the minimum charge current from that: watt_minimal_charge
+        # But if electricity is already flowing into the heaters, then we have to take this into account.
+        # self.step.get_total_watt() has to calculate the really current flow,
+        # not the theoretical load level of the HeatStep.
+        available = round(- watt_grid - watt_akku + watt_minimal_charge + self.step.get_total_watt(False), 2)
         total_kwh = heaters.get_total_watt_hours() / 1000.0
         heater_string = self.step.get_all_heater_status_tuple_as_string()
         self.status_print = \
-            "%s (%3.1fk) %+8.1f GRD %+8.1f AKK (%2.1f) %8.1f MIN %+8.1f AVA %s %.1f kWh" % \
+            "%s  (%3.1fk) %+8.1f GRD %+8.1f AKK (%2.1f) %8.1f MIN %+8.1f AVA %s %.1f kWh" % \
             (now, watt_pv, watt_grid, watt_akku, percent, watt_minimal_charge, available, heater_string, total_kwh)
         return available
 
@@ -142,7 +160,7 @@ class HeatManager(threading.Thread):
         return self.status_print
 
     def inform_about_new_step_definition(self):
-        self.new_step_definition = True
+        self.dynamic_config_change = True
 
     def stop(self):
         self.running = False

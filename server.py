@@ -47,7 +47,7 @@ class HeatHandler(http.server.BaseHTTPRequestHandler):
         if start > 0:
             end = self.requestline.find(" ", start)
             kvp = parse_qs(self.requestline[start + 1: end])
-        response = ""
+        response = "this is a system error"
         if 'do' in kvp:
             arg = kvp['do'][0]
             if arg == 'help':
@@ -67,15 +67,21 @@ class HeatHandler(http.server.BaseHTTPRequestHandler):
             elif arg == "enable":
                 if 'heater' in kvp:
                     for heater_name in kvp['heater']:
-                        heat(heater_name, "enable")
-                    response = "Heater %r is enabled." % kvp['heater']
+                        try:
+                            heat(heater_name, "enable")
+                            response = "Heater %r is enabled." % kvp['heater']
+                        except ValueError as inst:
+                            response = ' '.join(inst.args)
                 else:
                     response = "Parameter &heater=... is missing."
             elif arg == "disable":
                 if 'heater' in kvp:
                     for heater_name in kvp['heater']:
-                        heat(heater_name, "disable")
-                    response = "Heater %r is disabled." % kvp['heater']
+                        try:
+                            heat(heater_name, "disable")
+                            response = "Heater %r is disabled." % kvp['heater']
+                        except ValueError as inst:
+                            response = ' '.join(inst.args)
                 else:
                     response = "Parameter &heater=... is missing."
             elif arg == "switch":
@@ -83,11 +89,13 @@ class HeatHandler(http.server.BaseHTTPRequestHandler):
                     if len(kvp['heater']) != 2:
                         response = "There have to be two parameters &heater=..."
                     else:
-                        heater_name1 = kvp['heater'][0]
-                        heater_name2 = kvp['heater'][1]
-                        heatSteps.switch(heater_name1, heater_name2)
-                        manager.inform_about_new_step_definition()
-                        response = "Heaters %r are switched." % kvp['heater']
+                        try:
+                            heater_name1 = kvp['heater'][0]
+                            heater_name2 = kvp['heater'][1]
+                            response = heatSteps.switch(heater_name1, heater_name2)
+                            manager.inform_about_new_step_definition()
+                        except ValueError as inst:
+                            response = ' '.join(inst.args)
                 else:
                     response = "Parameter &heater=... is missing."
             elif arg == "clear":

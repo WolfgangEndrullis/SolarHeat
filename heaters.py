@@ -42,6 +42,12 @@ class Heaters:
     def get_total_watt_hours(self):
         return self.__calculate_total_watt_hours()
 
+    def is_dynamic_configuration_change(self):
+        for heater in self.list:
+            if heater.is_one_time_config_change():
+                return True
+        return False
+
 
 # -------------------------------------------------------------------------------
 # Test

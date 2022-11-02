@@ -18,7 +18,8 @@ class HeatSteps:
     heatStepList = []
 
     def __init__(self):
-        print("Parse HeatSteps ... and check connections to heaters. \nThis can take some time!")
+        print("Parse HeatSteps ... and check connections to heaters. \n"
+              "This can take a while because TinyTuya asks several times if heaters are not connected.")
         self.__parse(self.__read())
 
     def __read(self):
@@ -40,8 +41,10 @@ class HeatSteps:
         return self.heatStepList
 
     def switch(self, heater_name1, heater_name2):
+        result = ""
         for st in self.heatStepList:
-            st.switch(heater_name1, heater_name2)
+            result = st.switch(heater_name1, heater_name2)
+        return result
 
     def clear_switch(self):
         for st in self.heatStepList:

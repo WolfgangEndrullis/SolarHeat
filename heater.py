@@ -43,10 +43,6 @@ class Heater:
     # Device.
     heaterDevice = None
 
-    # To detect changes and to avoid unnecessary actions.
-    # The last set heating level.
-    lastActiveLoad = None
-
     # To sum the output of the heating.
     wattHours = 0
     lastChangeTime = None
@@ -55,6 +51,13 @@ class Heater:
     connectError = False
     connectTime = 0
     connectRetrySeconds = 180
+
+    # enabled = False  and  connectError = True  are critical values with implications for the HeatStep objects.
+    # If this values change, the manager has to be informed via inform_about_new_step_definition().
+    # To detect such changes, the following properties are used.
+    lastEnabled = True
+    lastConnect = False
+    dynamic_config_change = False
 
     def __init__(self, heater_dictionary):
         """ Initializes the Heater object without establishing a connection to the heater device.
@@ -69,6 +72,10 @@ class Heater:
         self.isOnIndex = heater_dictionary['isOnIndex']
         self.loadIndex = heater_dictionary['loadIndex']
         self.load = heater_dictionary['load']
+
+        self.lastEnabled = self.enabled
+        self.lastConnect = False
+        self.dynamic_config_change = False
 
     def __device(self) -> tinytuya.OutletDevice:
         """ The heater device provided by TinyTuya.
@@ -136,15 +143,16 @@ class Heater:
             raise DisableException
         diff = time.time() - self.connectTime
         if self.connectError and diff < self.connectRetrySeconds:
-            raise ConnectException
+            self.__raise_connect_exception()
         data = self.__device().status()
         self.connectError = False
         self.connectTime = time.time()
         if "Error" in data:
             self.connectError = True
             self.connectTime = time.time()
-            raise ConnectException
+            self.__raise_connect_exception()
         else:
+            self.__check_new_step_definition_by_connect(True)
             return data
 
     def get_status_string(self) -> str:
@@ -197,7 +205,9 @@ class Heater:
                 return 0
             load = self.get_load()
             return self.load[load]
-        except (ConnectException, DisableException):
+        except DisableException:
+            return 0
+        except ConnectException:
             return 0
 
     def get_watt_of_status(self, status) -> int:
@@ -239,21 +249,35 @@ class Heater:
             self.get_status_dictionary()
             return False
         except ConnectException:
+            self.lastChangeTime = None
             return True
 
     def is_on(self):
         """ Requests the heater device and determines whether the heater is on.
 
+        If the heater is in the error state (maybe not connected), it is assumed to be off.
+
         :return: bool: True if the heater currently is on.
         """
-        dps = self.get_dps()
-        return dps[str(self.isOnIndex)]
+        try:
+            dps = self.get_dps()
+            return dps[str(self.isOnIndex)]
+        except ConnectException:
+            return False
+
+    def is_one_time_config_change(self):
+        value = self.dynamic_config_change
+        self.dynamic_config_change = False
+        return value
 
     def set_enabled(self, value):
         """ Sets the heater enabled or disabled, but does not change the config file heaters.json.
 
+            Does not change the status of the heater! This is done by the manager.
+
         :param value: bool: True if the heater shall be enabled.
         """
+        self.__check_new_step_definition_by_enable(value)
         self.enabled = value
 
     def set_load(self, load):
@@ -272,7 +296,6 @@ class Heater:
         device = self.__device()
         device.turn_on()
         device.set_value(self.loadIndex, load)
-        self.lastActiveLoad = load
         self.lastChangeTime = time.time()
 
     def sum_watt_hours(self):
@@ -280,7 +303,7 @@ class Heater:
 
             Updates the class properties self.wattHours and self.lastChangeTime.
         """
-        if self.lastActiveLoad is None or self.lastChangeTime is None:
+        if self.lastChangeTime is None:
             return
         hours = (time.time() - self.lastChangeTime) / 3600.0
         watt = self.get_watt()
@@ -296,10 +319,9 @@ class Heater:
         if self.enabled:
             device = self.__device()
             device.turn_on()
-            self.lastActiveLoad = self.get_load()
             self.lastChangeTime = time.time()
         else:
-            raise DisableException
+            self.__raise_disable_exception()
 
     def turn_off(self):
         """ Switches the heater device off.
@@ -312,10 +334,29 @@ class Heater:
             device = self.__device()
             if device is not None:
                 device.turn_off()
-            self.lastActiveLoad = None
             self.lastChangeTime = None
         else:
-            raise DisableException
+            self.__raise_disable_exception()
+
+    def __check_new_step_definition_by_enable(self, is_enabled):
+        if not self.dynamic_config_change:
+            if is_enabled != self.lastEnabled:
+                self.dynamic_config_change = True
+                self.lastEnabled = is_enabled
+
+    def __raise_disable_exception(self):
+        self.__check_new_step_definition_by_enable(False)
+        raise DisableException
+
+    def __check_new_step_definition_by_connect(self, is_connect):
+        if not self.dynamic_config_change:
+            if is_connect != self.lastConnect:
+                self.dynamic_config_change = True
+                self.lastConnect = is_connect
+
+    def __raise_connect_exception(self):
+        self.__check_new_step_definition_by_connect(False)
+        raise ConnectException
 
 
 # -------------------------------------------------------------------------------

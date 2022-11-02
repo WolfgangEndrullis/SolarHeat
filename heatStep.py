@@ -21,10 +21,19 @@ class HeatStep:
 
     def __init__(self, heater_status_list):
         self.heater_status_list = heater_status_list
-        self.__calculate_total_watt()
+        self.__calculate_total_watt(True)
 
-    def __calculate_total_watt(self) -> int:
+    def __calculate_total_watt(self, according_step_definition) -> int:
         """ Calculates the total load in Watt of this heating level.
+
+        according_step_definition = True
+
+        The calculation is performed according to the definition of the step.
+        But disabled and faulty heaters produce 0 Watt.
+
+        according_step_definition = False
+
+        If a heater is switched off, disabled or cannot be reached, 0 Watt is assumed for this.
 
         :return: int: total load in Watt
         """
@@ -33,8 +42,12 @@ class HeatStep:
             the_name = self.__heater_name(heater_status[0])
             the_load = heater_status[1]
             heater = heaters.dict[the_name]
-            if heater.is_enabled():
-                self.total_watt += heater.get_watt_of_status(the_load)
+            if according_step_definition:
+                if heater.is_enabled():
+                    self.total_watt += heater.get_watt_of_status(the_load)
+            else:
+                if heater.is_enabled() and heater.is_on():
+                    self.total_watt += heater.get_watt_of_status(the_load)
         return self.total_watt
 
     def __heater_name(self, name) -> str:
@@ -71,8 +84,8 @@ class HeatStep:
             result += "[%s %4s] " % (heater_name, short_status)
         return result
 
-    def get_total_watt(self):
-        return self.__calculate_total_watt() #self.total_watt
+    def get_total_watt(self, according_step_definition):
+        return self.__calculate_total_watt(according_step_definition)
 
     def set_all_heater(self, verbose=True):
         for heater_status in self.heater_status_list:
@@ -80,15 +93,21 @@ class HeatStep:
             heat(self.__heater_name(a_name), a_status, verbose=verbose)
 
     def switch(self, heater_name1, heater_name2):
+        if heater_name1 not in self.heater_status_list:
+            raise ValueError("Unknown heater name: %r " % heater_name1)
+        if heater_name2 not in self.heater_status_list:
+            raise ValueError("Unknown heater name: %r " % heater_name2)
         if not self.switch_tuple:
             self.switch_tuple = (heater_name1, heater_name2)
+            return "Heaters %r and %r are switched" % (heater_name1, heater_name2)
         else:
             (name1, name2) = self.switch_tuple
             if heater_name1 == name1 or heater_name1 == name2:
                 if heater_name2 == name1 or heater_name2 == name2:
                     self.switch_tuple = None
-                    return
+                    return "Heater %r and %r no longer switched" % (heater_name1, heater_name2)
             self.switch_tuple = (heater_name1, heater_name2)
+            return "Heater %r and %r switched" % (heater_name1, heater_name2)
 
     def clear_switch(self):
         self.switch_tuple = None
