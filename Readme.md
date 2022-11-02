@@ -110,9 +110,11 @@ The heating levels are defined in the file heatSteps.json.
 
 #### heatSteps.json
 
-This file contains the states of all heaters in each heating stage. The 
-heating levels must be specified in strictly ascending order. See the 
-example file with three heaters.
+The process is on a 24x7 basis. Heaters can be unplugged and re-enabled. The 
+manager can deal with intermittent errors and reintegrates heaters when they 
+can be reached again via WLAN. The processing of changes usually takes a 
+maximum of three minutes.
+
 
 #### Trial and error algorithm
 
