@@ -25,7 +25,7 @@ class HeatServer(http.server.HTTPServer):
         super().__init__(server_address_port, request_handler)
 
 
-class HeatHandler(http.server.BaseHTTPRequestHandler):
+class HeatHandler(http.server.SimpleHTTPRequestHandler):
 
     usage = """
     do=start                            - starts the manager
@@ -40,6 +40,9 @@ class HeatHandler(http.server.BaseHTTPRequestHandler):
     do=switch&heater=name&heater=name   - exchanges two heaters in the HeatSteps definition
     do=clear                            - deletes the exchange of heaters
     """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, directory="/", **kwargs)
 
     def do_GET(self):
         start = self.requestline.find("?")
