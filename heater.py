@@ -259,11 +259,8 @@ class Heater:
 
         :return: bool: True if the heater currently is on.
         """
-        try:
-            dps = self.get_dps()
-            return dps[str(self.isOnIndex)]
-        except ConnectException:
-            return False
+        dps = self.get_dps()
+        return dps[str(self.isOnIndex)]
 
     def is_one_time_config_change(self):
         value = self.dynamic_config_change
