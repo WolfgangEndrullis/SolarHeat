@@ -46,8 +46,11 @@ class HeatStep:
                 if heater.is_enabled():
                     self.total_watt += heater.get_watt_of_status(the_load)
             else:
-                if heater.is_enabled() and heater.is_on():
-                    self.total_watt += heater.get_watt_of_status(the_load)
+                try:
+                    if heater.is_enabled() and heater.is_on():
+                        self.total_watt += heater.get_watt_of_status(the_load)
+                except ConnectException:
+                    pass
         return self.total_watt
 
     def __heater_name(self, name) -> str:

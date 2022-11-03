@@ -49,8 +49,8 @@ class Heater:
 
     # To detect if network errors still exist we ask only every 3 minutes.
     connectError = False
-    connectTime = 0
-    connectRetrySeconds = 180
+    connectErrorTime = 0
+    connectErrorRetrySeconds = 180
 
     # enabled = False  and  connectError = True  are critical values with implications for the HeatStep objects.
     # If this values change, the manager has to be informed via inform_about_new_step_definition().
@@ -141,17 +141,16 @@ class Heater:
         """
         if not self.enabled:
             raise DisableException
-        diff = time.time() - self.connectTime
-        if self.connectError and diff < self.connectRetrySeconds:
-            self.__raise_connect_exception()
+        if self.connectError:
+            if (time.time() - self.connectErrorTime) < self.connectErrorRetrySeconds:
+                self.__raise_connect_exception()
         data = self.__device().status()
-        self.connectError = False
-        self.connectTime = time.time()
         if "Error" in data:
             self.connectError = True
-            self.connectTime = time.time()
+            self.connectErrorTime = time.time()
             self.__raise_connect_exception()
         else:
+            self.connectError = False
             self.__check_new_step_definition_by_connect(True)
             return data
 
@@ -255,8 +254,7 @@ class Heater:
     def is_on(self):
         """ Requests the heater device and determines whether the heater is on.
 
-        If the heater is in the error state (maybe not connected), it is assumed to be off.
-
+        :raises: ConnectException if the heater is not reachable.
         :return: bool: True if the heater currently is on.
         """
         dps = self.get_dps()
