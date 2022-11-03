@@ -91,7 +91,7 @@ It supports the following functions:
 
     do=start                            - starts the manager
     do=stop                             - stops the manager
-    do= info                            - short information about the heaters
+    do=info                             - short information about the heaters
     do=status                           - full status information about the heaters und solar system
     do=verbose                          - turn on extensive logging on the server
     do=silent                           - turn off extensive logging on the server
@@ -134,3 +134,38 @@ manager can deal with intermittent errors and reintegrates heaters when they
 can be reached again via WLAN. The processing of changes usually takes a 
 maximum of three minutes.
 
+### Implementation
+
+The following example shows an implementation on Linux, using **systemctl**. 
+The application runs when the system is started - without the need for a user to login - 
+as a system service.
+
+Create a file **start** with the following content in the directory with the 
+Python project files - in this example /home/pi/bin/heat.
+
+    #! /bin/sh
+
+    cd /home/pi/bin/heat
+    python3 server.py
+
+Create a file **heat.system** with the following content in the directory 
+/etc/systemd/system. Customize ExecStart!
+
+    [Unit]
+    Description=Heat Service and Manager
+    Wants=network-online.target
+    After=network.target network-online.target
+    [Service]
+    Type=idle
+    User=pi
+    ExecStart=/home/pi/bin/heat/start
+    Restart=always
+    RestartSec=60
+    [Install]
+    WantedBy=multi-user.target
+
+During a session, the service can be controlled using the following commands:
+
+    sudo systemctl start heat
+    sudo systemctl stop heat
+    sudo systemctl status heat
