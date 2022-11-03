@@ -3,7 +3,7 @@
 SolarHeat is a small and simple solution to use superfluous electrical 
 energy from a photovoltaic system for heating. 
 It automatically manages a group of electric heaters in defined heat steps 
-with the aim of making  maximum use of the own energy from the roof. It 
+with the aim of making  maximum use of the own energy from the own roof. It 
 provides an HTTP server for remote control and information. 
 
 The requirements to use the application are:
