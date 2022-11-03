@@ -137,8 +137,7 @@ maximum of three minutes.
 ### Implementation
 
 The following example shows an implementation on Linux, using **systemctl**. 
-The application runs when the system is started - without the need for a user to login - 
-as a system service.
+The application runs when the system is started as a system service - without the need for a user to login.
 
 Create a file **start** with the following content in the directory with the 
 Python project files - in this example /home/pi/bin/heat.
