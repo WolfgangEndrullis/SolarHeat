@@ -32,6 +32,7 @@ SolarHeat is tested and works sucessfully with heaters named EVERWARM GPH
 
 It should be mentioned that the heaters can be controlled purely locally once they have been set up 
 in the Tuya system. It is possible to withdraw all access rights to the Internet in the router!
+But first you need parameters for operation from Tuya.
 
 ### To make it work for you
 
