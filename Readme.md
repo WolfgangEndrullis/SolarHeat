@@ -30,6 +30,9 @@ framework is described in the [TinyTuya project](https://github.com/jasonacox/ti
 SolarHeat is tested and works sucessfully with heaters named EVERWARM GPH 
 1500W Wifi or WARM CRYSTAL 2000W Wifi. 
 
+It should be mentioned that the heaters can be controlled purely locally once they have been set up 
+in the Tuya system. It is possible to withdraw all access rights to the Internet in the router!
+
 ### To make it work for you
 
 If your photovoltaic system supports another API than Fronius Solar API V1, 
