@@ -41,8 +41,7 @@ The file solar.py contains the class Solar, which determines and provides
 among other properties the following power flow real time data:
 
     * watt_grid  - power flow between inverter and grid (negative to the grid, positive from grid to inverter)
-    * watt_akku  - power flow between inverter and accumulator (negative to 
-the accu, positive from accu to inverter)
+    * watt_akku  - power flow between inverter and accumulator (negative to the accu, positive from accu to inverter)
     * charged_percent  - current state of charge of the accumulator in percent
 
 If there is no accumulator in the system, watt_akku could simply set to 0.
