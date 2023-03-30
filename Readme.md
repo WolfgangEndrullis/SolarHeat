@@ -150,7 +150,7 @@ Python project files - in this example /home/pi/bin/heat.
     cd /home/pi/bin/heat
     python3 server.py
 
-Create a file **heat.system** with the following content in the directory 
+Create a file **heat.service** with the following content in the directory 
 /etc/systemd/system. Customize ExecStart!
 
     [Unit]
