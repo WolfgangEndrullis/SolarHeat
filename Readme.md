@@ -166,6 +166,15 @@ Create a file **heat.service** with the following content in the directory
     [Install]
     WantedBy=multi-user.target
 
+Change file permissions to make it readable by all:
+
+    sudo chmod 644 /etc/systemd/system/heat.service
+
+Inform the system, that you have added this file to be started at boot:
+
+    sudo systemctl daemon-reload
+    sudo systemctl enable heat.service
+
 During a session, the service can be controlled using the following commands:
 
     sudo systemctl start heat
