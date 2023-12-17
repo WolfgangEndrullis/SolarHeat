@@ -179,4 +179,5 @@ During a session, the service can be controlled using the following commands:
 
     sudo systemctl start heat
     sudo systemctl stop heat
+    sudo systemctl reload heat
     sudo systemctl status heat
